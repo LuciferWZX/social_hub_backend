@@ -10,6 +10,9 @@ export class ShutdownService implements OnApplicationShutdown {
     if (platform === 'darwin') {
       defaultName = 'wukongim-darwin-amd64';
     }
+    if (platform === 'linux') {
+      defaultName = 'wukongim-linux-amd64';
+    }
     if (defaultName) {
       exec(
         `cd ./third-part-lib/wukongim && chmod +x ${defaultName} && ./${defaultName} stop`,

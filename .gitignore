@@ -3,6 +3,7 @@
 /node_modules
 /build
 
+/third-part-lib/wukongim-*
 # Logs
 logs
 *.log
