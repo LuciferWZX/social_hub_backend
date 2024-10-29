@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '../models/user';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User) private userModel: typeof User) {}
@@ -9,6 +10,17 @@ export class UsersService {
     return this.userModel.findOne({
       rejectOnEmpty: undefined,
       where: { ...params },
+    });
+  }
+  async searchOne(uid: string, exact: string) {
+    return await this.userModel.findOne({
+      attributes: { exclude: ['password'] },
+      where: {
+        [Op.and]: [
+          { [Op.or]: [{ email: exact }, { username: exact }] },
+          { id: { [Op.not]: uid } },
+        ],
+      },
     });
   }
   async saveOne(params: Partial<User>): Promise<User | null> {
