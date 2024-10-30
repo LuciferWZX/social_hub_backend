@@ -18,3 +18,7 @@ export interface IUser {
   iat?: number;
   exp?: number;
 }
+export enum RequestStatus {
+  accept = 'accept',
+  reject = 'reject',
+}

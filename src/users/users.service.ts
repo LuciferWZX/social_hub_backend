@@ -2,14 +2,35 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '../models/user';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { FriendRequest } from '../models/friend_request';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User) private userModel: typeof User) {}
+  constructor(
+    @InjectModel(User) private userModel: typeof User,
+    @InjectModel(FriendRequest)
+    private friendRequestModel: typeof FriendRequest,
+  ) {}
   async findOne(params: Partial<User>): Promise<User | null> {
     return this.userModel.findOne({
       rejectOnEmpty: undefined,
       where: { ...params },
+    });
+  }
+  async getUserSimple(uid: string) {
+    return this.userModel.findOne({
+      rejectOnEmpty: undefined,
+      attributes: [
+        'username',
+        'nickname',
+        'email',
+        'gender',
+        'avatar',
+        'banned',
+      ],
+      where: {
+        id: uid,
+      },
     });
   }
   async searchOne(uid: string, exact: string) {
@@ -20,6 +41,35 @@ export class UsersService {
           { [Op.or]: [{ email: exact }, { username: exact }] },
           { id: { [Op.not]: uid } },
         ],
+      },
+    });
+  }
+  async friendRequest(uid: string, fid: string) {
+    const record = await this.friendRequestModel.findOne({
+      where: {
+        [Op.or]: [
+          { uid: uid, to: fid, status: null },
+          { uid: fid, to: uid, status: null },
+        ],
+      },
+    });
+    if (record) {
+      if (record.uid === uid) {
+        throw new BadRequestException('您已发送好友请求，请勿重复发送');
+      }
+      if (record.to === uid) {
+        throw new BadRequestException('对方已向您发送好友请求，请勿重复发送');
+      }
+    }
+    return await this.friendRequestModel.create({
+      uid: uid,
+      to: fid,
+    });
+  }
+  async getRequestList(uid: string) {
+    return await this.friendRequestModel.findAll({
+      where: {
+        [Op.or]: [{ uid: uid }, { to: uid }],
       },
     });
   }
