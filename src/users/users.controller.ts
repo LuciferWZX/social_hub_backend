@@ -9,6 +9,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { RequestStatus } from '../types/user';
 @Controller('user')
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -23,6 +24,16 @@ export class UsersController {
   async request(@Request() req, @Body() params: { friendId: string }) {
     const uid = req.user.id;
     await this.usersService.friendRequest(uid, params.friendId);
+    return null;
+  }
+  @HttpCode(HttpStatus.OK)
+  @Post('/friend/request/handle')
+  async handleRequest(
+    @Request() req,
+    @Body() params: { id: string; type: RequestStatus },
+  ) {
+    const uid = req.user.id;
+    await this.usersService.handleFriendRequest(params.id, uid, params.type);
     return null;
   }
   @HttpCode(HttpStatus.OK)

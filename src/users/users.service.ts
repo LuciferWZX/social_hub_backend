@@ -3,6 +3,7 @@ import { User } from '../models/user';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FriendRequest } from '../models/friend_request';
+import { RequestStatus } from '../types/user';
 
 @Injectable()
 export class UsersService {
@@ -65,6 +66,21 @@ export class UsersService {
       uid: uid,
       to: fid,
     });
+  }
+  async handleFriendRequest(id: string, uid: string, type: RequestStatus) {
+    const record = await this.friendRequestModel.update(
+      {
+        status: type,
+      },
+      {
+        returning: undefined,
+        where: {
+          id: id,
+          to: uid,
+        },
+      },
+    );
+    return null;
   }
   async getRequestList(uid: string) {
     return await this.friendRequestModel.findAll({
