@@ -22,6 +22,7 @@ export class UsersService {
     return this.userModel.findOne({
       rejectOnEmpty: undefined,
       attributes: [
+        'id',
         'username',
         'nickname',
         'email',
@@ -42,6 +43,30 @@ export class UsersService {
           { [Op.or]: [{ email: exact }, { username: exact }] },
           { id: { [Op.not]: uid } },
         ],
+      },
+    });
+  }
+  async getFriends(uid: string) {
+    const friendsRecord = await this.friendRequestModel.findAll({
+      where: {
+        [Op.and]: [
+          {
+            [Op.or]: [{ uid: uid }, { to: uid }],
+          },
+          { status: RequestStatus.accept },
+        ],
+      },
+    });
+    const friendIds = friendsRecord.map((fr) => {
+      if (fr.uid === uid) {
+        return fr.to;
+      }
+      return fr.uid;
+    });
+    return await this.userModel.findAll({
+      attributes: { exclude: ['password'] },
+      where: {
+        id: friendIds,
       },
     });
   }

@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Request,
@@ -40,6 +41,12 @@ export class UsersController {
   @Get('/:uid')
   getUserInfo(@Param('uid') uid: string) {
     return this.usersService.getUserSimple(uid);
+  }
+  @HttpCode(HttpStatus.OK)
+  @Get('/friend/list')
+  getFriends(@Request() req) {
+    const uid = req.user.id;
+    return this.usersService.getFriends(uid);
   }
   @HttpCode(HttpStatus.OK)
   @Get('/friend/request/list')
